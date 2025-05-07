@@ -1,19 +1,40 @@
-
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { requestAPI } from '@/api';
-import { toast } from 'sonner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Clock, MapPin, UserCheck, Calendar as CalendarIcon } from 'lucide-react';
-import { format, addMonths } from 'date-fns';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Booking } from '@/types';
-import { Navigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { requestAPI } from "@/api";
+import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  UserCheck,
+  Calendar as CalendarIcon,
+} from "lucide-react";
+import { format, addMonths } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Booking } from "@/types";
+import { Navigate, Link } from "react-router-dom";
+import TutorBookings from "./TutorBookings";
 
 const BookingCard: React.FC<{
   booking: any;
@@ -21,34 +42,35 @@ const BookingCard: React.FC<{
 }> = ({ booking, onExtend }) => {
   const [extensionMonths, setExtensionMonths] = useState(1);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
+
   const handleExtend = () => {
     onExtend(booking.id, extensionMonths);
     setIsDialogOpen(false);
   };
-  
+
   // Format days array to readable string
-  const formattedDays = booking.daysOfWeek.join(', ');
-  
+  const formattedDays = booking.daysOfWeek.join(", ");
+
   // Calculate end date
   const endDate = new Date(booking.endDate);
   const startDate = new Date(booking.startDate);
-  
+
   // Calculate if booking is active based on current date and end date
-  const isActive = new Date() <= endDate && booking.status === 'active';
-  
+  const isActive = new Date() <= endDate && booking.status === "active";
+
   return (
-    <Card className={`${isActive ? 'border-green-200' : 'border-gray-200'}`}>
+    <Card className={`${isActive ? "border-green-200" : "border-gray-200"}`}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-lg">{booking.subject}</CardTitle>
-            <CardDescription>
-              {booking.tutorName}
-            </CardDescription>
+            <CardDescription>{booking.tutorName}</CardDescription>
           </div>
           <Badge variant={isActive ? "default" : "outline"}>
-            {isActive ? "Active" : booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+            {isActive
+              ? "Active"
+              : booking.status.charAt(0).toUpperCase() +
+                booking.status.slice(1)}
           </Badge>
         </div>
       </CardHeader>
@@ -56,7 +78,8 @@ const BookingCard: React.FC<{
         <div className="flex items-center text-sm">
           <CalendarIcon className="h-4 w-4 mr-2 text-primary" />
           <span>
-            {format(startDate, 'MMM d, yyyy')} - {format(endDate, 'MMM d, yyyy')}
+            {format(startDate, "MMM d, yyyy")} -{" "}
+            {format(endDate, "MMM d, yyyy")}
           </span>
         </div>
         <div className="flex items-center text-sm">
@@ -67,21 +90,21 @@ const BookingCard: React.FC<{
           <Clock className="h-4 w-4 mr-2 text-primary" />
           <span>{booking.timeSlot}</span>
         </div>
-        <div className="font-medium mt-2">
-          ${booking.monthlyFee}/month
-        </div>
+        <div className="font-medium mt-2">${booking.monthlyFee}/month</div>
       </CardContent>
       <CardFooter>
         {isActive && (
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="w-full">Extend Booking</Button>
+              <Button variant="outline" className="w-full">
+                Extend Booking
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Extend Booking</DialogTitle>
                 <DialogDescription>
-                  Current end date: {format(endDate, 'MMMM d, yyyy')}
+                  Current end date: {format(endDate, "MMMM d, yyyy")}
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
@@ -96,13 +119,23 @@ const BookingCard: React.FC<{
                     max={12}
                     className="col-span-3"
                     value={extensionMonths}
-                    onChange={(e) => setExtensionMonths(parseInt(e.target.value))}
+                    onChange={(e) =>
+                      setExtensionMonths(parseInt(e.target.value))
+                    }
                   />
                 </div>
                 <div className="col-span-4 text-sm">
                   <p className="font-medium">New end date will be:</p>
-                  <p>{format(addMonths(endDate, extensionMonths), 'MMMM d, yyyy')}</p>
-                  <p className="mt-2">Total additional cost: ${booking.monthlyFee * extensionMonths}</p>
+                  <p>
+                    {format(
+                      addMonths(endDate, extensionMonths),
+                      "MMMM d, yyyy"
+                    )}
+                  </p>
+                  <p className="mt-2">
+                    Total additional cost: $
+                    {booking.monthlyFee * extensionMonths}
+                  </p>
                 </div>
               </div>
               <DialogFooter>
@@ -118,146 +151,30 @@ const BookingCard: React.FC<{
   );
 };
 
-const Bookings: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchBookings();
-    }
-  }, [isAuthenticated]);
-  
-  const fetchBookings = async () => {
-    try {
-      setLoading(true);
-      const response = await requestAPI.getRequests();
-      
-      // Filter out only the accepted requests that would have bookings
-      const acceptedRequests = response.data.data.requests.filter(
-        (request: any) => request.status === 'accepted'
-      );
-      
-      // Transform requests data to booking format (in a real app, you'd fetch bookings directly)
-      const bookingsData = acceptedRequests.map((req: any) => ({
-        id: req._id,
-        requestId: req._id,
-        subject: req.subject,
-        tutorName: req.tutor.name,
-        tutorId: req.tutor._id,
-        studentId: req.student._id,
-        startDate: req.startDate,
-        endDate: req.endDate,
-        daysOfWeek: req.preferredDays,
-        timeSlot: req.preferredTime,
-        monthlyFee: req.monthlyFee,
-        status: 'active',
-        createdAt: req.createdAt,
-      }));
-      
-      setBookings(bookingsData);
-    } catch (error) {
-      toast.error('Failed to fetch bookings');
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  const handleExtendBooking = async (bookingId: string, additionalMonths: number) => {
-    try {
-      await requestAPI.extendBooking({ bookingId, additionalMonths });
-      toast.success('Extension request sent successfully!');
-      
-      // Update the booking in the local state (this is a simplified version)
-      setBookings((prevBookings) =>
-        prevBookings.map((booking) => {
-          if (booking.id === bookingId) {
-            return {
-              ...booking,
-              endDate: format(addMonths(new Date(booking.endDate), additionalMonths), 'yyyy-MM-dd'),
-              extended: true,
-            };
-          }
-          return booking;
-        })
-      );
-    } catch (error) {
-      toast.error('Failed to extend booking');
-    }
-  };
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold">My Bookings</h1>
+const Bookings = () => {
+  const { user } = useAuth();
+
+  // Render appropriate booking component based on user role
+  if (user?.role === "tutor") {
+    return <TutorBookings />;
+  } else if (user?.role === "student") {
+    // Use existing component for students
+    return (
+      <div className="container mx-auto p-4 space-y-6">
+        <h1 className="text-3xl font-bold">Your Bookings</h1>
         <p className="text-muted-foreground">
-          Manage your ongoing and completed tuition bookings
+          Currently we're working on student bookings view
         </p>
       </div>
-      
-      {loading ? (
-        <div className="flex justify-center p-12">
-          <p>Loading bookings...</p>
-        </div>
-      ) : bookings.length === 0 ? (
-        <Card className="text-center p-12">
-          <h3 className="text-xl font-medium mb-2">No Bookings Found</h3>
-          <p className="text-muted-foreground mb-6">
-            You don't have any active or past bookings yet.
-          </p>
-          <Link to="/tutors">
-            <Button>Find a Tutor</Button>
-          </Link>
-        </Card>
-      ) : (
-        <Tabs defaultValue="active">
-          <TabsList>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
-          </TabsList>
-          <TabsContent value="active" className="mt-6">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {bookings
-                .filter(booking => booking.status === 'active' && new Date(booking.endDate) >= new Date())
-                .map((booking) => (
-                  <BookingCard
-                    key={booking.id}
-                    booking={booking}
-                    onExtend={handleExtendBooking}
-                  />
-                ))}
-              {bookings.filter(booking => booking.status === 'active' && new Date(booking.endDate) >= new Date()).length === 0 && (
-                <div className="col-span-full text-center py-12">
-                  <p>No active bookings</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-          <TabsContent value="completed" className="mt-6">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {bookings
-                .filter(booking => booking.status === 'completed' || new Date(booking.endDate) < new Date())
-                .map((booking) => (
-                  <BookingCard
-                    key={booking.id}
-                    booking={booking}
-                    onExtend={handleExtendBooking}
-                  />
-                ))}
-              {bookings.filter(booking => booking.status === 'completed' || new Date(booking.endDate) < new Date()).length === 0 && (
-                <div className="col-span-full text-center py-12">
-                  <p>No completed bookings</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
-      )}
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold">Bookings</h1>
+      <p className="text-muted-foreground">
+        You need to be a tutor or student to view bookings.
+      </p>
     </div>
   );
 };

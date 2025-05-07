@@ -1,59 +1,60 @@
-
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const tuitionRequestSchema = new mongoose.Schema(
   {
     student: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     tutor: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     subject: {
       type: String,
-      required: [true, 'Subject is required'],
+      required: [true, "Subject is required"],
     },
     gradeLevel: {
       type: String,
-      required: [true, 'Grade/class level is required'],
+      required: [true, "Grade level is required"],
     },
     preferredDays: {
       type: [String],
-      enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-      required: [true, 'Preferred days are required'],
+      required: [true, "Preferred days are required"],
+      validate: {
+        validator: function (v) {
+          return v.length > 0;
+        },
+        message: "At least one preferred day is required",
+      },
     },
     preferredTime: {
       type: String,
-      required: [true, 'Preferred time is required'],
+      required: [true, "Preferred time is required"],
     },
     duration: {
-      type: Number, // in months
-      default: 1,
-      min: 1,
+      type: Number,
+      required: [true, "Duration is required"],
+      min: [1, "Duration must be at least 1 month"],
     },
     startDate: {
       type: Date,
-      required: [true, 'Start date is required'],
-    },
-    endDate: {
-      type: Date,
-    },
-    status: {
-      type: String,
-      enum: ['pending', 'accepted', 'rejected'],
-      default: 'pending',
+      required: [true, "Start date is required"],
     },
     monthlyFee: {
       type: Number,
-      required: [true, 'Monthly fee is required'],
+      required: [true, "Monthly fee is required"],
+      min: [0, "Monthly fee cannot be negative"],
     },
     notes: {
       type: String,
-      trim: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "rejected"],
+      default: "pending",
     },
   },
   {
@@ -61,15 +62,5 @@ const tuitionRequestSchema = new mongoose.Schema(
   }
 );
 
-// Pre-save middleware to calculate end date
-tuitionRequestSchema.pre('save', function (next) {
-  if (this.isModified('startDate') || this.isModified('duration')) {
-    const endDate = new Date(this.startDate);
-    endDate.setMonth(endDate.getMonth() + this.duration);
-    this.endDate = endDate;
-  }
-  next();
-});
-
-const TuitionRequest = mongoose.model('TuitionRequest', tuitionRequestSchema);
+const TuitionRequest = mongoose.model("TuitionRequest", tuitionRequestSchema);
 module.exports = TuitionRequest;

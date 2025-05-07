@@ -1,4 +1,3 @@
-
 // User role types
 export type UserRole = 'tutor' | 'student' | 'admin';
 
@@ -15,32 +14,43 @@ export interface User {
     city: string;
     area: string;
   };
-  subjects?: string[];
-  experience?: number;
-  availability?: string;
-  monthlyFee?: number;
-  bio?: string;
+  tutorProfile?: TutorProfileData;
 }
 
-// Tutor Profile Interface
-export interface TutorProfile extends User {
-  address: {
-    city: string;
-    area: string;
-  };
+// Enhanced TutorProfile Interface
+export interface TutorProfileData {
+  _id?: string;
   subjects: string[];
   experience: number;
   availability: string;
-  monthlyFee: number;
-  bio?: string;
+  monthlyRate: number;
+  education: string[];
+  about: string;
+  rating?: number;
+  numReviews?: number;
+  profileComplete?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Student Profile Interface
-export interface StudentProfile extends User {
-  phoneNumber: string;
-  address: {
-    city: string;
-    area: string;
+// Registration Data Interface
+export interface RegisterUserData {
+  name: string;
+  email: string;
+  password: string;
+  role: UserRole;
+  phoneNumber?: string;
+  address?: {
+    city?: string;
+    area?: string;
+  };
+  tutorProfile?: {
+    subjects: string[];
+    experience: number;
+    availability: string;
+    monthlyRate: number;
+    education: string[];
+    about: string;
   };
 }
 

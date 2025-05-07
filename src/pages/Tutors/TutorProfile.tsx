@@ -1,22 +1,28 @@
-
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, Navigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Calendar, 
-  MapPin, 
-  Clock, 
-  Star, 
+import React, { useState, useEffect } from "react";
+import { useParams, Link, Navigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Calendar,
+  MapPin,
+  Clock,
+  Star,
   Mail,
   BookOpen,
   Briefcase,
   DollarSign,
-} from 'lucide-react';
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { tutorAPI } from '@/api';
-import { toast } from 'sonner';
+import { tutorAPI } from "@/api";
+import { toast } from "sonner";
 
 interface TutorType {
   _id: string;
@@ -48,15 +54,27 @@ interface ReviewType {
 
 // Mock reviews (since we don't have a reviews feature in the backend yet)
 const mockReviews: ReviewType[] = [
-  { id: '1', name: 'Alex J.', rating: 5, comment: 'Excellent tutor! Helped me understand complex topics.', date: '2024-03-15' },
-  { id: '2', name: 'Sarah M.', rating: 4, comment: 'Very knowledgeable and patient.', date: '2024-02-28' }
+  {
+    id: "1",
+    name: "Alex J.",
+    rating: 5,
+    comment: "Excellent tutor! Helped me understand complex topics.",
+    date: "2024-03-15",
+  },
+  {
+    id: "2",
+    name: "Sarah M.",
+    rating: 4,
+    comment: "Very knowledgeable and patient.",
+    date: "2024-02-28",
+  },
 ];
 
 const TutorProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [tutor, setTutor] = useState<TutorType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (id) {
@@ -70,8 +88,8 @@ const TutorProfile: React.FC = () => {
       const response = await tutorAPI.getTutor(tutorId);
       setTutor(response.data.data.tutor);
     } catch (error) {
-      toast.error('Failed to fetch tutor information');
-      setError('Could not load tutor profile');
+      toast.error("Failed to fetch tutor information");
+      setError("Could not load tutor profile");
     } finally {
       setLoading(false);
     }
@@ -88,7 +106,7 @@ const TutorProfile: React.FC = () => {
   if (error || !tutor) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh]">
-        <p className="text-red-500 mb-4">{error || 'Tutor not found'}</p>
+        <p className="text-red-500 mb-4">{error || "Tutor not found"}</p>
         <Link to="/tutors">
           <Button>Back to Tutors</Button>
         </Link>
@@ -96,7 +114,9 @@ const TutorProfile: React.FC = () => {
     );
   }
 
-  const location = tutor.address ? `${tutor.address.city}, ${tutor.address.area}` : 'Location not specified';
+  const location = tutor.address
+    ? `${tutor.address.city}, ${tutor.address.area}`
+    : "Location not specified";
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -113,7 +133,10 @@ const TutorProfile: React.FC = () => {
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-full">
               <img
-                src={tutor.profilePic || 'https://randomuser.me/api/portraits/men/32.jpg'}
+                src={
+                  tutor.profilePic ||
+                  "https://randomuser.me/api/portraits/men/32.jpg"
+                }
                 alt={tutor.name}
                 className="h-full w-full object-cover"
               />
@@ -121,7 +144,7 @@ const TutorProfile: React.FC = () => {
             <CardTitle className="text-xl">{tutor.name}</CardTitle>
             <div className="flex items-center justify-center space-x-1 text-amber-500">
               <Star className="h-4 w-4 fill-amber-500" />
-              <span>{tutor.tutorProfile?.rating || 'New'}</span>
+              <span>{tutor.tutorProfile?.rating || "New"}</span>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -144,7 +167,11 @@ const TutorProfile: React.FC = () => {
             <div className="flex flex-wrap gap-1 mt-2">
               <BookOpen className="h-4 w-4 mr-2 text-primary" />
               {tutor.tutorProfile?.subjects.map((subject) => (
-                <Badge key={subject} variant="secondary" className="font-normal">
+                <Badge
+                  key={subject}
+                  variant="secondary"
+                  className="font-normal"
+                >
                   {subject}
                 </Badge>
               ))}
@@ -171,7 +198,9 @@ const TutorProfile: React.FC = () => {
                   <CardTitle>About {tutor.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p>{tutor.tutorProfile?.about || 'No information provided.'}</p>
+                  <p>
+                    {tutor.tutorProfile?.about || "No information provided."}
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -181,7 +210,8 @@ const TutorProfile: React.FC = () => {
                   <CardTitle>Education & Qualifications</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {tutor.tutorProfile?.education && tutor.tutorProfile.education.length > 0 ? (
+                  {tutor.tutorProfile?.education &&
+                  tutor.tutorProfile.education.length > 0 ? (
                     <ul className="space-y-2 list-disc pl-5">
                       {tutor.tutorProfile.education.map((edu, index) => (
                         <li key={index}>{edu}</li>
@@ -201,13 +231,21 @@ const TutorProfile: React.FC = () => {
                 <CardContent>
                   <div className="space-y-4">
                     {mockReviews.map((review) => (
-                      <div key={review.id} className="border-b pb-4 last:border-0">
+                      <div
+                        key={review.id}
+                        className="border-b pb-4 last:border-0"
+                      >
                         <div className="flex items-center justify-between">
                           <div className="font-medium">{review.name}</div>
                           <div className="flex items-center text-amber-500">
-                            {Array.from({ length: review.rating }).map((_, i) => (
-                              <Star key={i} className="h-3.5 w-3.5 fill-amber-500" />
-                            ))}
+                            {Array.from({ length: review.rating }).map(
+                              (_, i) => (
+                                <Star
+                                  key={i}
+                                  className="h-3.5 w-3.5 fill-amber-500"
+                                />
+                              )
+                            )}
                           </div>
                         </div>
                         <div className="text-sm text-muted-foreground mt-1">

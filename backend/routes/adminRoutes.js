@@ -1,20 +1,26 @@
-
-const express = require('express');
+const express = require("express");
+const { protect, restrictTo } = require("../middleware/authMiddleware");
 const {
   getAllUsers,
   getAllRequests,
   toggleBlockUser,
-} = require('../controllers/adminController');
-const { protect, restrictTo } = require('../middleware/authMiddleware');
+  getStatistics,
+} = require("../controllers/adminController");
 
 const router = express.Router();
 
-// Protect all routes and restrict to admin only
+// All routes require authentication and admin role
 router.use(protect);
-router.use(restrictTo('admin'));
+router.use(restrictTo("admin"));
 
-router.get('/users', getAllUsers);
-router.get('/requests', getAllRequests);
-router.put('/users/:id/block', toggleBlockUser);
+// User management routes
+router.get("/users", getAllUsers);
+router.put("/users/:id/block", toggleBlockUser);
+
+// Request management routes
+router.get("/requests", getAllRequests);
+
+// Dashboard statistics
+router.get("/statistics", getStatistics);
 
 module.exports = router;

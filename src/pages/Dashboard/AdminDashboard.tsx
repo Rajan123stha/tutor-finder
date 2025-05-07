@@ -1,170 +1,238 @@
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { adminAPI } from "@/api";
+import {
+  Loader2,
+  Users,
+  GraduationCap,
+  CalendarRange,
+  IndianRupee,
+} from "lucide-react";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
-import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Users, BookOpen, Shield, Check, X, AlertCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { Progress } from '@/components/ui/progress';
+const Dashboard = () => {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    users: { total: 0, tutors: 0, students: 0 },
+    requests: { total: 0, pending: 0, accepted: 0, rejected: 0 },
+    finance: { totalRevenue: 0 },
+    recent: { users: [], requests: [] },
+  });
 
-// Mock data for the admin dashboard
-const mockStats = {
-  totalUsers: 248,
-  totalTutors: 83,
-  totalStudents: 165,
-  totalRequests: 97,
-  activeBookings: 64,
-  pendingApprovals: 12,
-};
+  useEffect(() => {
+    fetchDashboardStats();
+  }, []);
 
-const mockPendingApprovals = [
-  {
-    id: 'tutor1',
-    name: 'Prof. Mark Wilson',
-    email: 'mark.wilson@example.com',
-    role: 'tutor',
-    date: '2024-04-27',
-  },
-  {
-    id: 'tutor2',
-    name: 'Dr. Sophia Lee',
-    email: 'sophia.lee@example.com',
-    role: 'tutor',
-    date: '2024-04-26',
-  },
-];
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true);
+      console.log("Fetching admin statistics...");
+      const response = await adminAPI.getStatistics();
+      console.log("Statistics response:", response.data);
+      setStats(response.data.data);
+    } catch (error) {
+      console.error("Error fetching dashboard statistics:", error);
+      toast.error("Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const AdminDashboard: React.FC = () => {
-  const { user } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[70vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p className="text-muted-foreground">Welcome, {user?.name}. Here's an overview of your platform.</p>
-      </div>
+    <div className="container mx-auto p-4 space-y-6">
+      <h1 className="text-3xl font-bold">Admin Dashboard</h1>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      {/* Overview Cards */}
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium">Total Users</CardTitle>
-            <CardDescription>
-              All registered users on the platform
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div className="flex items-center justify-between">
-              <Users className="h-8 w-8 text-primary opacity-80" />
-              <div className="text-3xl font-bold text-right">{mockStats.totalUsers}</div>
-            </div>
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span>Tutors</span>
-                <span>{mockStats.totalTutors}</span>
-              </div>
-              <Progress value={(mockStats.totalTutors / mockStats.totalUsers) * 100} className="h-2" />
-              <div className="flex items-center justify-between text-sm">
-                <span>Students</span>
-                <span>{mockStats.totalStudents}</span>
-              </div>
-              <Progress value={(mockStats.totalStudents / mockStats.totalUsers) * 100} className="h-2" />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Link to="/admin/users" className="w-full">
-              <Button variant="outline" className="w-full">View All Users</Button>
-            </Link>
-          </CardFooter>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium">Tuition Requests</CardTitle>
-            <CardDescription>
-              Current and completed requests
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pb-2">
-            <div className="flex items-center justify-between">
-              <BookOpen className="h-8 w-8 text-primary opacity-80" />
-              <div className="text-3xl font-bold text-right">{mockStats.totalRequests}</div>
-            </div>
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span>Active</span>
-                <span>{mockStats.activeBookings}</span>
-              </div>
-              <Progress value={(mockStats.activeBookings / mockStats.totalRequests) * 100} className="h-2" />
-              <div className="flex items-center justify-between text-sm">
-                <span>Pending</span>
-                <span>{mockStats.totalRequests - mockStats.activeBookings}</span>
-              </div>
-              <Progress value={((mockStats.totalRequests - mockStats.activeBookings) / mockStats.totalRequests) * 100} className="h-2" />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Link to="/admin/requests" className="w-full">
-              <Button variant="outline" className="w-full">View All Requests</Button>
-            </Link>
-          </CardFooter>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium">Pending Approvals</CardTitle>
-            <CardDescription>
-              Tutor accounts awaiting approval
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex items-center justify-between pb-2">
-            <Shield className="h-8 w-8 text-primary opacity-80" />
-            <div className="text-3xl font-bold text-right">{mockStats.pendingApprovals}</div>
-          </CardContent>
-          <CardFooter>
-            <Link to="/admin/approvals" className="w-full">
-              <Button className="w-full">Review Approvals</Button>
-            </Link>
-          </CardFooter>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-1">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Pending Tutor Approvals</CardTitle>
-            <CardDescription>
-              Tutor accounts waiting for your review
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {mockPendingApprovals.map((tutor) => (
-                <div key={tutor.id} className="flex items-center justify-between border-b pb-2 last:border-0">
-                  <div>
-                    <p className="font-medium">{tutor.name}</p>
-                    <p className="text-sm text-muted-foreground">{tutor.email}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" className="h-8 text-green-600 border-green-600 hover:bg-green-50">
-                      <Check className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="h-8 text-red-600 border-red-600 hover:bg-red-50">
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div className="text-2xl font-bold">{stats.users.total}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {stats.users.tutors} tutors, {stats.users.students} students
+            </p>
           </CardContent>
-          <CardFooter>
-            <Link to="/admin/approvals" className="w-full">
-              <Button variant="outline" className="w-full">View All Pending Approvals</Button>
-            </Link>
-          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">
+              Tutoring Requests
+            </CardTitle>
+            <GraduationCap className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.requests.total}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {stats.requests.accepted} accepted, {stats.requests.pending}{" "}
+              pending
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <IndianRupee className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ₹{stats.finance.totalRevenue.toLocaleString()}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              From {stats.requests.accepted} accepted requests
+            </p>
+          </CardContent>
         </Card>
       </div>
+
+      {/* Recent Activity Tabs */}
+      <Tabs defaultValue="users" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="users">Recent Users</TabsTrigger>
+          <TabsTrigger value="requests">Recent Requests</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="users" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recently Joined Users</CardTitle>
+              <CardDescription>
+                The newest members of TutorConnectPro
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {stats.recent.users.length > 0 ? (
+                  stats.recent.users.map((user) => (
+                    <div
+                      key={user._id}
+                      className="flex items-center justify-between border-b pb-2"
+                    >
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-medium">{user.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            user.role === "tutor"
+                              ? "bg-blue-100 text-blue-800"
+                              : user.role === "admin"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {user.role}
+                        </span>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {user.createdAt
+                            ? format(new Date(user.createdAt), "MMM dd, yyyy")
+                            : "Unknown date"}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground">
+                    No users found
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="requests" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Tuition Requests</CardTitle>
+              <CardDescription>
+                Latest tuition requests in the system
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {stats.recent.requests.length > 0 ? (
+                  stats.recent.requests.map((request) => (
+                    <div
+                      key={request._id}
+                      className="flex items-center justify-between border-b pb-2"
+                    >
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                          <CalendarRange className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{request.subject}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {request.student?.name || "Unknown Student"} →{" "}
+                            {request.tutor?.name || "Unknown Tutor"}
+                          </p>
+                        </div>
+                      </div>
+                      <div>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            request.status === "accepted"
+                              ? "bg-green-100 text-green-800"
+                              : request.status === "rejected"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {request.status}
+                        </span>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ₹{request.monthlyFee} •{" "}
+                          {request.createdAt
+                            ? format(
+                                new Date(request.createdAt),
+                                "MMM dd, yyyy"
+                              )
+                            : "Unknown date"}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-muted-foreground">
+                    No requests found
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
 
-export default AdminDashboard;
+export default Dashboard;

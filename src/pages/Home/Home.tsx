@@ -1,12 +1,23 @@
-
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Notebook, School, Calendar, Star, ArrowRight } from 'lucide-react';
+import { Toaster } from '@/components/ui/toaster';
+import { useToast } from '@/components/ui/use-toast';
 
 const Home: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Example toast notification that shows on page load
+    toast({
+      title: "Welcome to TutorConnectPro",
+      description: "Find the perfect tutor for your learning needs",
+      duration: 5000, // Disappears after 5 seconds
+    });
+  }, []);
 
   const features = [
     {
@@ -84,9 +95,9 @@ const Home: React.FC = () => {
               </Link>
             ) : (
               <>
-                <Link to="/register">
+                <Link to="/tutor">
                   <Button size="lg" className="text-base">
-                    Get Started
+                    Find tutor
                   </Button>
                 </Link>
                 <Link to="/login">
@@ -208,6 +219,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
+      <Toaster />
     </div>
   );
 };
