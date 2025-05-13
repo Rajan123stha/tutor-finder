@@ -109,10 +109,10 @@ const Sidebar: React.FC = () => {
                 active={pathname === "/requests/tutor"}
               />
               <SidebarItem
-                to="/bookings"
+                to="/bookings/tutor"
                 icon={<Calendar size={20} />}
                 text="Active Bookings"
-                active={pathname === "/bookings"}
+                active={pathname === "/bookings/tutor"}
               />
             </>
           )}

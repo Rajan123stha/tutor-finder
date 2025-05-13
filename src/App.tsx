@@ -21,6 +21,10 @@ import AdminRequests from "./pages/Admin/Requests";
 import NotFound from "./pages/NotFound";
 import TutorRequests from "@/pages/Requests/TutorRequests";
 import TutionRequest from "@/pages/Requests/StudentRequests";
+import BookingHistory from "./components/profile/BookingHistory";
+import ActiveStudents from "./components/profile/ActiveStudents";
+import StudentBookingHistory from "./components/profile/StudentBookingHistory";
+import StudentBookings from "./pages/Bookings/StudentBookings";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -71,7 +75,15 @@ function App() {
                 path="/requests"
                 element={
                   <ProtectedRoute>
-                    <TutionRequest />
+                    <BookingHistory />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bookings/tutor"
+                element={
+                  <ProtectedRoute>
+                    <ActiveStudents />
                   </ProtectedRoute>
                 }
               />
@@ -79,7 +91,7 @@ function App() {
                 path="/bookings"
                 element={
                   <ProtectedRoute>
-                    <Bookings />
+                    <StudentBookings />
                   </ProtectedRoute>
                 }
               />

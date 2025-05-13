@@ -138,30 +138,32 @@ const TutorDashboard = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <Link to="/students">
+            <Link to="/bookings/tutor">
               <Button className="w-full">View Students</Button>
             </Link>
           </CardFooter>
         </Card>
 
-        {/* Upcoming Sessions Card */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-medium">
-              Upcoming Sessions
-            </CardTitle>
-            <CardDescription>Your scheduled tutoring sessions</CardDescription>
+            <CardTitle className="text-lg font-medium">Earnings</CardTitle>
+            <CardDescription>Your total earnings from tutoring</CardDescription>
           </CardHeader>
           <CardContent className="flex items-center justify-center pb-2">
             <div className="text-3xl font-bold text-primary">
-              {activeStudents.length > 0 ? activeStudents.length : 0}
+              {loading
+                ? "..."
+                : `₹${activeStudents.reduce(
+                    (acc, student) => acc + student.bookingDetails.monthlyFee,
+                    0
+                  )}`}
             </div>
           </CardContent>
-          <CardFooter>
-            <Link to="/schedule">
-              <Button className="w-full">View Schedule</Button>
+          {/* <CardFooter>
+            <Link to="/earnings/tutor">
+              <Button className="w-full">View Earnings</Button>
             </Link>
-          </CardFooter>
+          </CardFooter> */}
         </Card>
       </div>
 
@@ -283,9 +285,11 @@ const TutorDashboard = () => {
             )}
           </CardContent>
           <CardFooter>
-            <Button variant="outline" className="w-full">
-              View All Students
-            </Button>
+            <Link to="/bookings/tutor">
+              <Button variant="outline" className="w-full">
+                View All Students
+              </Button>
+            </Link>
           </CardFooter>
         </Card>
       </div>

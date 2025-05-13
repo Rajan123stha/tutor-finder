@@ -23,11 +23,11 @@ const Profile: React.FC = () => {
 
       {user.role === 'student' ? <StudentProfile /> : <TutorProfile />}
       
-      {user.role === 'student' && (
+      {/* {user.role === 'student' && (
         <div className="mt-6">
           <BookingHistory />
         </div>
-      )}
+      )} */}
     </div>
   );
 };

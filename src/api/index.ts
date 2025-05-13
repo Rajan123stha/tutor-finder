@@ -158,7 +158,9 @@ export const requestAPI = {
   },
   getStudentRequests: async () => {
     try {
+      console.log("before");
       const response = await api.get('/requests/student');
+      console.log(response);
       return response.data;
     } catch (error) {
       handleApiError(error);

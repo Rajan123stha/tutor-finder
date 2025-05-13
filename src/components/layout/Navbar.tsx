@@ -88,7 +88,7 @@ const Navbar: React.FC = () => {
                       <DropdownMenuLabel className="text-xs text-muted-foreground">
                         Admin Controls
                       </DropdownMenuLabel>
-                      <Link to="/admin/dashboard">
+                      <Link to="/dashboard">
                         <DropdownMenuItem>
                           <span>Admin Dashboard</span>
                         </DropdownMenuItem>

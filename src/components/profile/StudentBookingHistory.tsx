@@ -39,7 +39,9 @@ const StudentBookingHistory = () => {
   const fetchHistory = async () => {
     try {
       setLoading(true);
+      console.log("Fetching booking history...");
       const response = await requestAPI.getStudentRequests();
+      console.log(response);
       setHistory(response.data.data.requests);
     } catch (error) {
       toast.error("Failed to fetch booking history");

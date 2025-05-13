@@ -7,39 +7,6 @@ import { Calendar, Search, Clock, Check, X, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // Mock data for the student dashboard
-const mockRequests = [
-  {
-    id: 'req1',
-    tutorName: 'Prof. Robert Johnson',
-    subject: 'Mathematics',
-    status: 'pending',
-    date: '2024-04-28',
-  },
-  {
-    id: 'req2',
-    tutorName: 'Dr. Emily Wilson',
-    subject: 'Physics',
-    status: 'accepted',
-    date: '2024-04-25',
-  },
-  {
-    id: 'req3',
-    tutorName: 'Ms. Sarah Thompson',
-    subject: 'English Literature',
-    status: 'rejected',
-    date: '2024-04-22',
-  }
-];
-
-const mockBookings = [
-  {
-    id: 'book1',
-    tutorName: 'Dr. Emily Wilson',
-    subject: 'Physics',
-    nextSession: '2024-04-29, 3:00 PM',
-    remainingSessions: 7,
-  },
-];
 
 const StudentDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -104,7 +71,7 @@ const StudentDashboard: React.FC = () => {
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      {/* <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-medium">Recent Tuition Requests</CardTitle>
@@ -189,7 +156,7 @@ const StudentDashboard: React.FC = () => {
             </Link>
           </CardFooter>
         </Card>
-      </div>
+      </div> */}
     </div>
   );
 };
