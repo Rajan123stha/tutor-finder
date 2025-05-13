@@ -1,10 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { requestAPI } from '@/api';
-import { toast } from 'sonner';
-import { TuitionRequest } from '@/types/request';
-import { Badge } from '@/components/ui/badge';
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { requestAPI } from "@/api";
+import { toast } from "sonner";
+import { TuitionRequest } from "@/types/request";
+import { Badge } from "@/components/ui/badge";
 
 interface RequestsData {
   accepted: TuitionRequest[];
@@ -18,7 +24,7 @@ const StudentRequests = () => {
     accepted: [],
     pending: [],
     rejected: [],
-    total: 0
+    total: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -34,8 +40,8 @@ const StudentRequests = () => {
         setRequests(response.data.data);
       }
     } catch (error) {
-      console.error('Error fetching requests:', error);
-      toast.error('Failed to load requests');
+      console.error("Error fetching requests:", error);
+      toast.error("Failed to load requests");
     } finally {
       setLoading(false);
     }
@@ -43,14 +49,14 @@ const StudentRequests = () => {
 
   const getStatusBadge = (status: string) => {
     const variants: { [key: string]: string } = {
-      pending: 'warning',
-      accepted: 'success',
-      rejected: 'destructive',
-      completed: 'default'
+      pending: "warning",
+      accepted: "success",
+      rejected: "destructive",
+      completed: "default",
     };
 
     return (
-      <Badge variant={variants[status] || 'default'}>
+      <Badge variant={variants[status] || "default"}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
@@ -68,13 +74,22 @@ const StudentRequests = () => {
             {getStatusBadge(status)}
           </div>
         </CardHeader>
-        
+
         <CardContent className="space-y-2">
           <div className="text-sm">
-            <div><strong>Grade Level:</strong> {request.gradeLevel}</div>
-            <div><strong>Budget:</strong> ₹{request.budget}/month</div>
-            <div><strong>Preferred Days:</strong> {request.preferredDays.join(", ")}</div>
-            <div><strong>Preferred Time:</strong> {request.preferredTime}</div>
+            <div>
+              <strong>Grade Level:</strong> {request.gradeLevel}
+            </div>
+            <div>
+              <strong>Budget:</strong> ₹{request.budget}/month
+            </div>
+            <div>
+              <strong>Preferred Days:</strong>{" "}
+              {request.preferredDays.join(", ")}
+            </div>
+            <div>
+              <strong>Preferred Time:</strong> {request.preferredTime}
+            </div>
             {request.message && (
               <div className="mt-2">
                 <strong>Message:</strong>
@@ -82,7 +97,7 @@ const StudentRequests = () => {
               </div>
             )}
           </div>
-          
+
           <div className="text-sm text-muted-foreground mt-4">
             Requested on {new Date(request.createdAt).toLocaleDateString()}
           </div>
@@ -111,7 +126,9 @@ const StudentRequests = () => {
       {!hasRequests ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <p className="text-muted-foreground">You haven't made any requests yet</p>
+            <p className="text-muted-foreground">
+              You haven't made any requests yet
+            </p>
             <Button className="mt-4" asChild>
               <a href="/tutors">Find Tutors</a>
             </Button>
@@ -119,9 +136,9 @@ const StudentRequests = () => {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
-          {renderRequests(requests.pending, 'pending')}
-          {renderRequests(requests.accepted, 'accepted')}
-          {renderRequests(requests.rejected, 'rejected')}
+          {renderRequests(requests.pending, "pending")}
+          {renderRequests(requests.accepted, "accepted")}
+          {renderRequests(requests.rejected, "rejected")}
         </div>
       )}
     </div>

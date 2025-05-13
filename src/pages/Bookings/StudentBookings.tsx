@@ -9,33 +9,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { requestAPI } from "@/api";
 import { toast } from "sonner";
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  IndianRupee,
-  User,
-  CalendarIcon,
-} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookingData, BookingsState } from "@/types/booking";
 import { Badge } from "@/components/ui/badge";
-import { format, addMonths } from "date-fns";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Calendar, Clock } from "lucide-react";
 
 const StudentBookings = () => {
-  const [bookings, setBookings] = useState([]);
+  const [bookings, setBookings] = useState<BookingsState>({
+    active: [],
+    completed: [],
+    cancelled: [],
+    total: 0,
+  });
   const [loading, setLoading] = useState(true);
-  const [extensionMonths, setExtensionMonths] = useState(1);
-  const [selectedBooking, setSelectedBooking] = useState(null);
 
   useEffect(() => {
     fetchBookings();
@@ -45,8 +31,6 @@ const StudentBookings = () => {
     try {
       setLoading(true);
       const response = await requestAPI.getStudentBookings();
-      console.log("Student bookings:", response?.data);
-
       if (response?.data?.data) {
         setBookings(response.data.data);
       }
@@ -58,29 +42,57 @@ const StudentBookings = () => {
     }
   };
 
-  const handleExtendBooking = async (bookingId, months) => {
-    try {
-      await requestAPI.extendBooking(bookingId, months);
-      toast.success("Booking extension requested");
-      fetchBookings();
-    } catch (error) {
-      console.error("Error extending booking:", error);
-      toast.error("Failed to extend booking");
-    }
-  };
+  const renderBookingCard = (booking: BookingData) => (
+    <Card key={booking._id} className="mb-4">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-lg">{booking.subject}</CardTitle>
+            <CardDescription>With {booking.tutor.name}</CardDescription>
+          </div>
+          <Badge
+            variant={booking.status === "active" ? "default" : "secondary"}
+          >
+            {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+          </Badge>
+        </div>
+      </CardHeader>
 
-  const getStatusBadge = (booking) => {
-    const endDate = new Date(booking.endDate);
-    const isActive = new Date() <= endDate && booking.status === "active";
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="flex items-center space-x-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span>
+              {new Date(booking.startDate).toLocaleDateString()} -{" "}
+              {new Date(booking.endDate).toLocaleDateString()}
+            </span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Clock className="h-4 w-4 text-muted-foreground" />
+            <span>{booking.timeSlot}</span>
+          </div>
+        </div>
 
-    return (
-      <Badge variant={isActive ? "default" : "outline"}>
-        {isActive
-          ? "Active"
-          : booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-      </Badge>
-    );
-  };
+        <div>
+          <p className="text-sm font-medium mb-1">Schedule:</p>
+          <div className="flex flex-wrap gap-1">
+            {booking.daysOfWeek.map((day) => (
+              <span
+                key={day}
+                className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded"
+              >
+                {day}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="text-sm font-medium">
+          Fee: ₹{booking.monthlyFee}/month
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   if (loading) {
     return (
@@ -94,139 +106,67 @@ const StudentBookings = () => {
     <div className="container mx-auto p-4 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Your Bookings</h1>
-        <p className="text-muted-foreground">Manage your tuition bookings</p>
+        <p className="text-muted-foreground">Track your tuition bookings</p>
       </div>
 
-      {bookings.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-muted-foreground">
-              You don't have any active bookings
-            </p>
-            <Button className="mt-4" asChild>
-              <a href="/tutors">Find Tutors</a>
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2">
-          {bookings.map((booking) => {
-            const startDate = new Date(booking.startDate);
-            const endDate = new Date(booking.endDate);
-            const isActive =
-              new Date() <= endDate && booking.status === "active";
+      <Tabs defaultValue="active" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="active">
+            Active ({bookings.active.length})
+          </TabsTrigger>
+          <TabsTrigger value="completed">
+            Completed ({bookings.completed.length})
+          </TabsTrigger>
+          <TabsTrigger value="cancelled">
+            Cancelled ({bookings.cancelled.length})
+          </TabsTrigger>
+        </TabsList>
 
-            return (
-              <Card
-                key={booking._id}
-                className={`${
-                  isActive ? "border-green-200" : "border-gray-200"
-                }`}
-              >
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">
-                        {booking.subject}
-                      </CardTitle>
-                      <CardDescription>{booking.tutorName}</CardDescription>
-                    </div>
-                    {getStatusBadge(booking)}
-                  </div>
-                </CardHeader>
+        <TabsContent value="active">
+          {bookings.active.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">No active bookings</p>
+                <Button className="mt-4" asChild>
+                  <a href="/tutors">Find Tutors</a>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2">
+              {bookings.active.map(renderBookingCard)}
+            </div>
+          )}
+        </TabsContent>
 
-                <CardContent className="space-y-2">
-                  <div className="flex items-center text-sm">
-                    <CalendarIcon className="h-4 w-4 mr-2 text-primary" />
-                    <span>
-                      {format(startDate, "MMM d, yyyy")} -{" "}
-                      {format(endDate, "MMM d, yyyy")}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <Calendar className="h-4 w-4 mr-2 text-primary" />
-                    <span>{booking.daysOfWeek.join(", ")}</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <Clock className="h-4 w-4 mr-2 text-primary" />
-                    <span>{booking.timeSlot}</span>
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <MapPin className="h-4 w-4 mr-2 text-primary" />
-                    <span>{booking.mode}</span>
-                  </div>
-                  <div className="font-medium mt-2">
-                    ₹{booking.monthlyFee}/month
-                  </div>
+        <TabsContent value="completed">
+          {bookings.completed.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">No completed bookings</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2">
+              {bookings.completed.map(renderBookingCard)}
+            </div>
+          )}
+        </TabsContent>
 
-                  {isActive && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full mt-4"
-                          onClick={() => setSelectedBooking(booking)}
-                        >
-                          Extend Booking
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Extend Booking</DialogTitle>
-                          <DialogDescription>
-                            Current end date: {format(endDate, "MMMM d, yyyy")}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="months" className="text-right">
-                              Additional months
-                            </Label>
-                            <Input
-                              id="months"
-                              type="number"
-                              min={1}
-                              max={12}
-                              className="col-span-3"
-                              value={extensionMonths}
-                              onChange={(e) =>
-                                setExtensionMonths(parseInt(e.target.value))
-                              }
-                            />
-                          </div>
-                          <div className="col-span-4 text-sm">
-                            <p className="font-medium">New end date will be:</p>
-                            <p>
-                              {format(
-                                addMonths(endDate, extensionMonths),
-                                "MMMM d, yyyy"
-                              )}
-                            </p>
-                            <p className="mt-2">
-                              Total additional cost: ₹
-                              {booking.monthlyFee * extensionMonths}
-                            </p>
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button
-                            onClick={() =>
-                              handleExtendBooking(booking._id, extensionMonths)
-                            }
-                            disabled={extensionMonths < 1}
-                          >
-                            Request Extension
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+        <TabsContent value="cancelled">
+          {bookings.cancelled.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">No cancelled bookings</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2">
+              {bookings.cancelled.map(renderBookingCard)}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

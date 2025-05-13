@@ -7,6 +7,7 @@ const userRoutes = require("./routes/userRoutes");
 const tutorRoutes = require("./routes/tutorRoutes");
 const requestRoutes = require("./routes/requestRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/tutors", tutorRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

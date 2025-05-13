@@ -137,6 +137,15 @@ export const tutorAPI = {
       throw error;
     }
   },
+  getTutorBookings: async () => {
+    try {
+      const response = await api.get("/bookings/tutor");
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
 };
 
 // Request API functions
@@ -177,6 +186,38 @@ export const requestAPI = {
     try {
       const response = await api.put(`/requests/${requestId}/status`, {
         status,
+      });
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+
+  getStudentBookings: async () => {
+    try {
+      const response = await api.get("/bookings/student");
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+
+  getTutorBookings: async () => {
+    try {
+      const response = await api.get("/bookings/tutor");
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+
+  extendBooking: async (bookingId, months) => {
+    try {
+      const response = await api.post(`/bookings/${bookingId}/extend`, {
+        months,
       });
       return response;
     } catch (error) {

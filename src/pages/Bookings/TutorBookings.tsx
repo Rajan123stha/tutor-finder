@@ -1,50 +1,174 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Loader2,
-  Calendar,
-  Clock,
-  GraduationCap,
-  IndianRupee,
-  User,
-  MapPin,
-  Phone,
-} from "lucide-react";
-import { tutorAPI } from "@/api";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { requestAPI, tutorAPI } from "@/api";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+import { Loader2, Calendar, Clock, MapPin, Phone, Mail } from "lucide-react";
 
 const TutorBookings = () => {
-  const { user } = useAuth();
+  const [bookings, setBookings] = useState({
+    active: [],
+    completed: [],
+    cancelled: [],
+    total: 0,
+  });
   const [loading, setLoading] = useState(true);
-  const [activeBookings, setActiveBookings] = useState([]);
 
   useEffect(() => {
-    fetchActiveBookings();
+    fetchBookings();
   }, []);
 
-  const fetchActiveBookings = async () => {
+  const fetchBookings = async () => {
     try {
       setLoading(true);
-      console.log("Fetching active bookings...");
+      console.log("Fetching tutor bookings...");
 
-      const response = await tutorAPI.getActiveStudents();
-      console.log("Active bookings response:", response?.data);
+      // Try the tutorAPI endpoint first
+      try {
+        const response = await tutorAPI.getTutorBookings();
+        console.log("Tutor bookings from tutorAPI:", response?.data);
 
-      if (response?.data?.data?.activeStudents) {
-        setActiveBookings(response.data.data.activeStudents);
+        if (response?.data?.data) {
+          setBookings(response.data.data);
+          return;
+        }
+      } catch (error) {
+        console.log("Failed to fetch from tutorAPI, trying requestAPI...");
+      }
+
+      // Fallback to requestAPI
+      const bookingsResponse = await requestAPI.getTutorBookings();
+      console.log("Tutor bookings from requestAPI:", bookingsResponse?.data);
+
+      if (bookingsResponse?.data?.data) {
+        setBookings(bookingsResponse.data.data);
       } else {
-        console.log("No active bookings found in response");
-        setActiveBookings([]);
+        console.log("No bookings found in response");
+        setBookings({
+          active: [],
+          completed: [],
+          cancelled: [],
+          total: 0,
+        });
       }
     } catch (error) {
-      console.error("Error fetching active bookings:", error);
-      toast.error("Failed to load active bookings");
+      console.error("Error fetching bookings:", error);
+      toast.error("Failed to load bookings");
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderBooking = (booking) => {
+    return (
+      <Card key={booking._id} className="mb-4">
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-lg">{booking.subject}</CardTitle>
+              <CardDescription>
+                {booking.studentName ||
+                  (booking.student && booking.student.name) ||
+                  "Unknown Student"}
+              </CardDescription>
+            </div>
+            <Badge
+              variant={booking.status === "active" ? "default" : "outline"}
+            >
+              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+            </Badge>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-10 w-10">
+              <AvatarImage
+                src={
+                  booking.studentProfilePic ||
+                  (booking.student && booking.student.profilePic)
+                }
+              />
+              <AvatarFallback>
+                {(
+                  booking.studentName ||
+                  (booking.student && booking.student.name) ||
+                  "ST"
+                )
+                  .substring(0, 2)
+                  .toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-sm font-medium">
+                {booking.studentEmail ||
+                  (booking.student && booking.student.email) ||
+                  "No email provided"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {booking.studentPhone ||
+                  (booking.student && booking.student.phoneNumber) ||
+                  "No phone number"}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="flex items-center space-x-1">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span>
+                {new Date(booking.startDate).toLocaleDateString()} -{" "}
+                {new Date(booking.endDate).toLocaleDateString()}
+              </span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span>{booking.timeSlot || "Not specified"}</span>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Schedule:</p>
+            <div className="flex flex-wrap gap-1">
+              {booking.daysOfWeek ? (
+                booking.daysOfWeek.map((day) => (
+                  <span
+                    key={day}
+                    className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded"
+                  >
+                    {day}
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  No schedule specified
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="text-sm">
+            <strong>Fee:</strong> ₹{booking.monthlyFee || 0}/month
+          </div>
+        </CardContent>
+
+        <CardFooter>
+          <Button variant="outline" className="w-full">
+            View Details
+          </Button>
+        </CardFooter>
+      </Card>
+    );
   };
 
   if (loading) {
@@ -58,144 +182,71 @@ const TutorBookings = () => {
   return (
     <div className="container mx-auto p-4 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Your Active Bookings</h1>
-        <p className="text-muted-foreground">
-          Students you are currently tutoring
-        </p>
+        <h1 className="text-3xl font-bold">Your Bookings</h1>
+        <p className="text-muted-foreground">Manage your student bookings</p>
       </div>
 
-      {activeBookings.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-muted-foreground">
-              You don't have any active bookings yet
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-6">
-          {activeBookings.map((booking, index) => (
-            <Card
-              key={booking.bookingDetails?.id || index}
-              className="overflow-hidden"
-            >
-              <div className="md:flex">
-                <div className="md:w-1/3 bg-muted p-6 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-xl font-semibold mb-4">
-                      {booking.bookingDetails?.subject || "Unknown Subject"}
-                    </h3>
+      <Tabs defaultValue="active" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="active">
+            Active ({bookings.active ? bookings.active.length : 0})
+          </TabsTrigger>
+          <TabsTrigger value="completed">
+            Completed ({bookings.completed ? bookings.completed.length : 0})
+          </TabsTrigger>
+          <TabsTrigger value="cancelled">
+            Cancelled ({bookings.cancelled ? bookings.cancelled.length : 0})
+          </TabsTrigger>
+        </TabsList>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>
-                          Start Date:{" "}
-                          {booking.bookingDetails?.startDate
-                            ? new Date(
-                                booking.bookingDetails.startDate
-                              ).toLocaleDateString()
-                            : "Not specified"}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>
-                          Time:{" "}
-                          {booking.bookingDetails?.timeSlot || "Not specified"}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <IndianRupee className="h-4 w-4 text-muted-foreground" />
-                        <span>
-                          Fee: ₹{booking.bookingDetails?.monthlyFee || 0}/month
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <div className="text-xs uppercase text-muted-foreground font-medium">
-                      Schedule
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {booking.bookingDetails?.daysOfWeek ? (
-                        booking.bookingDetails.daysOfWeek.map((day) => (
-                          <span
-                            key={day}
-                            className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded"
-                          >
-                            {day}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-sm text-muted-foreground">
-                          No schedule specified
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="md:w-2/3 p-6">
-                  <div className="flex items-center gap-4 mb-6">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={booking.studentInfo?.profilePic} />
-                      <AvatarFallback>
-                        {booking.studentInfo?.name
-                          ? booking.studentInfo.name
-                              .substring(0, 2)
-                              .toUpperCase()
-                          : "ST"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h4 className="text-lg font-semibold">
-                        {booking.studentInfo?.name || "Unknown Student"}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {booking.studentInfo?.email || "No email provided"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm font-medium mb-1">
-                        Contact Information
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <span>
-                            {booking.studentInfo?.phoneNumber ||
-                              "No phone number"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span>
-                            {booking.studentInfo?.address
-                              ? `${booking.studentInfo.address.area}, ${booking.studentInfo.address.city}`
-                              : "No address provided"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 flex justify-end space-x-2">
-                    <Button variant="outline">Contact Student</Button>
-                    <Button>View Details</Button>
-                  </div>
-                </div>
-              </div>
+        <TabsContent value="active">
+          {!bookings.active || bookings.active.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">
+                  You don't have any active bookings
+                </p>
+              </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+              {bookings.active.map(renderBooking)}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="completed">
+          {!bookings.completed || bookings.completed.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">
+                  You don't have any completed bookings
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+              {bookings.completed.map(renderBooking)}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="cancelled">
+          {!bookings.cancelled || bookings.cancelled.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">
+                  You don't have any cancelled bookings
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+              {bookings.cancelled.map(renderBooking)}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

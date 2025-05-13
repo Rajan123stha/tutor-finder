@@ -21,6 +21,7 @@ import AdminRequests from "./pages/Admin/Requests";
 import NotFound from "./pages/NotFound";
 import TutorRequests from "@/pages/Requests/TutorRequests";
 import TutionRequest from "@/pages/Requests/StudentRequests";
+import TutorBookings from "./pages/Bookings/TutorBookings";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -79,7 +80,7 @@ function App() {
                 path="/bookings"
                 element={
                   <ProtectedRoute>
-                    <Bookings />
+                    <TutorBookings />
                   </ProtectedRoute>
                 }
               />

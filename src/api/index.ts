@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { BookingsState } from '@/types/booking';
 
 // Type Definitions
 export interface TutorProfileData {
@@ -22,14 +23,31 @@ export interface TuitionRequestData {
   notes?: string;
 }
 
-// Error handling helper function
-const handleApiError = (error: any) => {
-  if (error.response) {
-    console.error('API Error:', error.response.data);
-    throw error.response.data;
-  }
-  throw error;
-};
+export interface BookingData {
+  _id: string;
+  student: {
+    _id: string;
+    name: string;
+    email: string;
+    phoneNumber?: string;
+    profilePic?: string;
+  };
+  subject: string;
+  startDate: string;
+  endDate: string;
+  daysOfWeek: string[];
+  timeSlot: string;
+  monthlyFee: number;
+  status: 'active' | 'completed' | 'cancelled';
+  createdAt: string;
+}
+
+export interface BookingsResponse {
+  active: BookingData[];
+  completed: BookingData[];
+  cancelled: BookingData[];
+  total: number;
+}
 
 // Create an Axios instance
 const api = axios.create({
@@ -42,20 +60,25 @@ const api = axios.create({
 // Add a request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Get token from local storage
     const token = localStorage.getItem('token');
-    
-    // If token exists, add to headers
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
-    
     return config;
   },
   (error) => {
     return Promise.reject(error);
   }
 );
+
+// Error handling helper function
+const handleApiError = (error: any) => {
+  if (error.response) {
+    console.error('API Error:', error.response.data);
+    throw error.response.data;
+  }
+  throw error;
+};
 
 // Auth API functions
 export const authAPI = {
@@ -122,6 +145,9 @@ export const tutorAPI = {
   getIncomingRequests: async () => {
     return await api.get('/tutors/requests/incoming');
   },
+  getTutorBookings: async () => {
+    return await bookingAPI.getTutorBookings();
+  }
 };
 
 // Request API functions
@@ -182,6 +208,55 @@ export const requestAPI = {
       handleApiError(error);
       throw error;
     }
+  },
+  getTutorBookings: async () => {
+    return await bookingAPI.getTutorBookings();
+  },
+  getStudentBookings: async () => {
+    return await bookingAPI.getStudentBookings();
+  }
+};
+
+// Booking API functions
+export const bookingAPI = {
+  getTutorBookings: async () => {
+    try {
+      const response = await api.get('/bookings/tutor');
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+
+  getStudentBookings: async () => {
+    try {
+      const response = await api.get('/bookings/student');
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+
+  extendBooking: async (bookingId: string, months: number) => {
+    try {
+      const response = await api.post(`/bookings/${bookingId}/extend`, { months });
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+
+  cancelBooking: async (bookingId: string) => {
+    try {
+      const response = await api.put(`/bookings/${bookingId}/cancel`);
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
   }
 };
 
@@ -227,3 +302,5 @@ export const adminAPI = {
     }
   }
 };
+
+export { api };
